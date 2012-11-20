@@ -1,4 +1,6 @@
-
+var HOST = 'sharedraw.jit.su';//'localhost'
+var PORT = 80;
+var WS_URL = "ws://" + HOST + ":" + PORT;
 // print a message
 function printMessage(message) {
 	$('#log').prepend('<li class="them">' + message + '</li>');
@@ -31,7 +33,7 @@ Client = function() {
 	function openConnection() {
 		if (conn.readyState === undefined || conn.readyState > 1) {
 			try {
-				conn = io.connect('ws://172.16.7.52:8000');
+				conn = io.connect(WS_URL);
 			} catch (e) {
 				conn = null;
 				alert('This browser could not surport WebSocket.');
@@ -44,7 +46,11 @@ Client = function() {
 			});
 			
 			conn.on('connect', function(message) {
-				$('#connected').html(message.length);
+				if(message != undefined) {
+					$('#connected').html(message.length);
+				}
+					
+				
 			});
 			
 			conn.on('close', function(message) {
@@ -70,7 +76,35 @@ Client = function() {
 				if (last != null)
 					Draw.draw(last);
 			});
+			
+			conn.on('lampOn', function(message) {
+				// lamp Message
+				//   id: Client.getMyId(),
+				//   action: 'lamp',
+				//   lampIndex : index
+				setLampOn(message.lampIndex);
+				
+			});
+			
+			conn.on('lampOff', function(message) {
+				setLampOff(message.lampIndex);
+				
+			});
 
+			conn.on('lampsOn', function(message) {
+				// lamp Message
+				//   id: Client.getMyId(),
+				//   action: 'lamp',
+				//   lampIndex : index
+				if(message != undefined) {
+					var lamps = message.lamps;
+					for(var i=0; i<lamps.length; i++) {
+						var lamp = lamps[i];
+						if(!lamp) continue;
+						setLampOn(lamp.lampIndex);
+					}
+				}
+			});
 
 
 			conn.onopen = function () {
@@ -112,6 +146,7 @@ Client = function() {
 			}
 
 			openConnection();
+			$(document).trigger("makeUI");
 		},
 		
 		send: function(action) {

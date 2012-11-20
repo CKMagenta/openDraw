@@ -2,18 +2,25 @@
 // Draw module
 Draw = function() {
 	var color = '#000000';
-	var lineWidth = 1;
+	var lineWidth = 5;
 	var canvas = null;
 	var context = null;
 	var tool = null;
 	var actionData = null;
-	
+	var _touchEV = null;
+	var zoomLev = 1;
+	var _x = 0;
+	var _y = 0;
 	// pencil tool
 	var PencilAction = {
 		onStart: function(x, y) {
 			// set color and lineWidth
 			context.strokeStyle = color;
 			context.lineWidth = lineWidth;
+			
+			x = _x = x/zoomLev;
+			y = _y = y/zoomLev;
+			
 			
 			// initialize a line data
 			actionData = {
@@ -22,26 +29,64 @@ Draw = function() {
 				undo: false,
 				lineWidth: lineWidth,
 				color: color,
-				data: [{x: x, y: y}]
+				data: [{x: x, y: y, lineWidth:lineWidth}]
 			}
 			
+			//context.beginPath();
+			//context.moveTo(x, y);
+			
 			context.beginPath();
-			context.moveTo(x, y);
-		},
-		onMove: function(x, y) {
-			context.lineTo(x, y);
+			context.moveTo(_x,_y);
+			context.lineWidth = calcLineWidth(x, y, _x, _y);
+			context.lineTo(x,y);
+			context.closePath();
 			context.stroke();
 			
-			actionData.data.push({x: x, y: y});		// add a (x,y) to actionData
+		},
+		onMove: function(x, y) {
+			var _lineWidth = lineWidth;
+			x = x/zoomLev;
+			y = y/zoomLev;
+			
+			
+			
+
+			//context.lineWidth = _lineWidth;
+			//context.lineTo(x, y);
+			//context.stroke();
+			
+			context.beginPath();
+			context.moveTo(_x,_y);
+			context.lineWidth = calcLineWidth(x, y, _x, _y);
+			context.lineTo(x,y);
+			context.closePath();
+			context.stroke();
+
+			
+			actionData.data.push({x: x, y: y, lineWidth : _lineWidth});		// add a (x,y) to actionData
+			_x = x;
+			_y = y;
 		},
 		onEnd: function(x, y) {
+			
+			x = x/zoomLev;
+			y = y/zoomLev;
+			
+			
+			context.beginPath();
+			context.moveTo(_x,_y);
+			context.lineWidth = calcLineWidth(x, y, _x, _y);
+			context.lineTo(x,y);
 			context.closePath();
+			context.stroke();
+			
+			//context.closePath();
 			
 			var myId = Client.getMyId();
 			if (History.hasRedo(myId))
 				History.removeUndid(myId);
 			
-			actionData.data.push({x: x, y: y});		// add a (x,y) to actionData
+			actionData.data.push({x: x, y: y, lineWidth : lineWidth});		// add a (x,y) to actionData
 			History.addAction(actionData);			// add to History
 			Client.send(actionData);				// send the action to server
 			actionData = null;
@@ -55,6 +100,10 @@ Draw = function() {
 	var EraseAction = {
 		onStart: function(x, y) {
 			// set color and lineWidth
+			
+			x = x/zoomLev;
+			y = y/zoomLev;
+			
 			var ERASE_WIDTH = 10;
 			context.strokeStyle = '#FFFFFF';
 			context.lineWidth = ERASE_WIDTH;
@@ -73,6 +122,12 @@ Draw = function() {
 			context.moveTo(x, y);
 		},
 		onMove: function(x, y) {
+			
+			
+			x = x/zoomLev;
+			y = y/zoomLev;
+			
+			
 			context.lineTo(x, y);
 			context.stroke();
 			
@@ -80,6 +135,10 @@ Draw = function() {
 		},
 		onEnd: function(x, y) {
 			context.closePath();
+			
+			
+			x = x/zoomLev;
+			y = y/zoomLev;
 			
 			var myId = Client.getMyId();
 			if (History.hasUndo(myId))
@@ -114,19 +173,67 @@ Draw = function() {
 		}
 		
 		// call specific event handler for type
-		var func = tool[ev.type];
+		var func = tool[ev.type];	
 		if (func) {
 			func(ev);
 		}
 	}
 	
+	function distanceBetweenPoints(x, y, _x, _y) {
+		
+		return Math.sqrt(Math.pow((x-_x),2) + Math.pow((y-_y),2));//length;
+	}
+	
+	function calcLineWidth(x, y, _x, _y) {
+		var d = distanceBetweenPoints(x, y, _x, _y);
+		var _lineWidth;
+			console.log(d);
+			_lineWidth = lineWidth - d*0.04;
+			/*
+			if(d < 2 ) {
+				_lineWidth = lineWidth;
+			} else if( d < 4) {
+				_lineWidth = lineWidth*0.95;
+			} else if( d < 6) {
+				_lineWidth = lineWidth*0.9;
+			} else if( d < 8) {
+				_lineWidth = lineWidth*0.85;
+			} else if( d < 10) {
+				_lineWidth = lineWidth*0.8;
+			} else if( d < 12) {
+				_lineWidth = lineWidth*0.75;
+			} else if( d < 14) {
+				_lineWidth = lineWidth*0.7;
+			} else if( d < 23) {
+				_lineWidth = lineWidth*0.65;
+			} else if( d < 27) {
+				_lineWidth = lineWidth*0.6;
+			} else if( d < 30) {				
+				_lineWidth = lineWidth*0.55;
+			} else if( d < 33) {
+				_lineWidth = lineWidth*0.5;
+			} else {
+				_lineWidth = lineWidth * 0.45;
+			}
+			*/
+			return _lineWidth;
+	}
+	
 	// touch event listener
 	function onTouchCanvas(ev) {
 		ev.preventDefault();
+		
+		
+		
 		var touch = ev.touches[0];
+		//$("#log").html("tc : "+ ev.touches.length); //start&move : 1, end:0
+		if(ev.touches.length ==0) touch = _touchEV.touches[0];
+		_touchEV = ev;
 		
 		// call specific event handler for type
-		var func = tool[ev.type];
+		var func = tool[ev.type];	// ev.type : touchstart touchmove touchend...
+		
+
 		if (func) {
 			func(touch);
 		}
@@ -134,10 +241,11 @@ Draw = function() {
 	
 	// action wrapper for action
 	function ActionListener(action) {
+		//$("#log").html("actionStart");
 		var listener = this;
 		this.started = false;
 		
-		this.mousedown = function(ev) {
+		this.mousedown = function(ev) {	//tool[mousedown]??
 			listener.started = true;
 			action.onStart(ev._x, ev._y);
 		};
@@ -149,20 +257,23 @@ Draw = function() {
 		this.mouseup = function(ev) {
 			if (listener.started) {
 				action.onEnd(ev._x, ev._y);
+				$("#log").html("touchEnd : "+ ev._x + "," + ev._y);				
 				listener.started = false;
 			}
 		};
 		this.touchstart = function(ev) {
+			//$("#log").html("touchStart");
 			listener.started = true;
 			action.onStart(ev.pageX, ev.pageY);
 		};
 		this.touchmove = function(ev) {
+			//$("#log").html("touchMove");
 			if (listener.started) {
 				action.onMove(ev.pageX, ev.pageY);
 			}
 		};
 		this.touchend = function(ev) {
-			if (listener.started) {
+			if (listener.started) {				
 				action.onEnd(ev.pageX, ev.pageY);
 				listener.started = false;
 			}
@@ -180,13 +291,53 @@ Draw = function() {
 			context.strokeStyle = color;
 			context.moveTo(data[0].x, data[0].y);
 			for (var i = 1; i < data.length; i++) {
+				//context.beginPath();
+				context.lineWidth = data[i].lineWidth;
 				context.lineTo(data[i].x, data[i].y);
 				context.stroke();
+				//context.closePath();
+				//console.log(data[i]);
 			}
 			context.closePath();
 			
 			context.lineWidth = preLineWidth;
 			context.strokeStyle = preColor;
+			
+			/*
+			var preLineWidth = context.lineWidth;
+			var preColor = context.strokeStyle;
+			
+			//context.beginPath();
+			context.lineWidth = lineWidth;
+			context.strokeStyle = color;
+			//context.moveTo(data[0].x, data[0].y);
+			var _x = 0;//data[0].x;
+			var _y = 0;//data[0].x;
+			var x = 0;//data[i].x;
+			var y = 0;//data[i].y;
+			for (var i = 0; i < data.length; i++) {//(var i = 1; i < data.length; i++) {
+				x = data[i].x;
+				y = data[i].y;
+				if(i==0) {
+					_x = data[i].x;
+					_y = data[i].y;
+				}
+				
+				context.beginPath();
+				context.moveTo(_x,_y);
+				context.lineWidth = calcLineWidth(x, y, _x, _y);
+				context.lineTo(x,y);//(data[i].x, data[i].y);
+				context.stroke();
+				context.closePath();
+				_x = x;
+				_y = y;
+				//console.log(data[i]);
+			}
+			//context.closePath();
+			
+			context.lineWidth = preLineWidth;
+			context.strokeStyle = preColor;
+			*/
 		}
 	}
 	
@@ -207,6 +358,9 @@ Draw = function() {
 				alert('Cannot call getContext() of Canvas');
 				return;
 			}
+			
+			context.setLineJoin("round");
+			context.setLineCap("round");
 			
 			// set tool <= pencil
 			Draw.changeTool('pencil');
