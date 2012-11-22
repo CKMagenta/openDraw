@@ -8,9 +8,10 @@ Draw = function() {
 	var tool = null;
 	var actionData = null;
 	var _touchEV = null;
-	var zoomLev = 1;
+	var zoomLev = window.zoomLev;
 	var _x = 0;
 	var _y = 0;
+	var nInputLine = 0;
 	// pencil tool
 	var PencilAction = {
 		onStart: function(x, y) {
@@ -18,8 +19,8 @@ Draw = function() {
 			context.strokeStyle = color;
 			context.lineWidth = lineWidth;
 			
-			x = _x = x/zoomLev;
-			y = _y = y/zoomLev;
+			x = _x = x;
+			y = _y = y;
 			
 			
 			// initialize a line data
@@ -45,8 +46,8 @@ Draw = function() {
 		},
 		onMove: function(x, y) {
 			var _lineWidth = lineWidth;
-			x = x/zoomLev;
-			y = y/zoomLev;
+			x = x;
+			y = y;
 			
 			
 			
@@ -69,8 +70,8 @@ Draw = function() {
 		},
 		onEnd: function(x, y) {
 			
-			x = x/zoomLev;
-			y = y/zoomLev;
+			x = x;
+			y = y;
 			
 			
 			context.beginPath();
@@ -101,8 +102,8 @@ Draw = function() {
 		onStart: function(x, y) {
 			// set color and lineWidth
 			
-			x = x/zoomLev;
-			y = y/zoomLev;
+			x = x;
+			y = y;
 			
 			var ERASE_WIDTH = 10;
 			context.strokeStyle = '#FFFFFF';
@@ -124,8 +125,8 @@ Draw = function() {
 		onMove: function(x, y) {
 			
 			
-			x = x/zoomLev;
-			y = y/zoomLev;
+			x = x;
+			y = y;
 			
 			
 			context.lineTo(x, y);
@@ -137,8 +138,8 @@ Draw = function() {
 			context.closePath();
 			
 			
-			x = x/zoomLev;
-			y = y/zoomLev;
+			x = x;
+			y = y;
 			
 			var myId = Client.getMyId();
 			if (History.hasUndo(myId))
@@ -159,25 +160,7 @@ Draw = function() {
 		['erase', EraseAction],
 	];
 	
-	// mouse event listener
-	function onMouseCanvas(ev) {
-		if (ev.layerX || ev.layerX == 0) {
-			// for Firefox
-			ev._x = ev.layerX;
-			ev._y = ev.layerY;
-		}
-		else if (ev.offsetX || ev.offsetX == 0) {
-			// for Opera
-			ev._x = ev.offsetX;
-			ev._y = ev.offsetY;
-		}
-		
-		// call specific event handler for type
-		var func = tool[ev.type];	
-		if (func) {
-			func(ev);
-		}
-	}
+	
 	
 	function distanceBetweenPoints(x, y, _x, _y) {
 		
@@ -187,7 +170,7 @@ Draw = function() {
 	function calcLineWidth(x, y, _x, _y) {
 		var d = distanceBetweenPoints(x, y, _x, _y);
 		var _lineWidth;
-			console.log(d);
+			//console.log(d);
 			_lineWidth = lineWidth - d*0.04;
 			/*
 			if(d < 2 ) {
@@ -218,7 +201,25 @@ Draw = function() {
 			*/
 			return _lineWidth;
 	}
-	
+	// mouse event listener
+	function onMouseCanvas(ev) {
+		if (ev.layerX || ev.layerX == 0) {
+			// for Firefox
+			ev._x = ev.layerX;
+			ev._y = ev.layerY;
+		}
+		else if (ev.offsetX || ev.offsetX == 0) {
+			// for Opera
+			ev._x = ev.offsetX;
+			ev._y = ev.offsetY;
+		}
+		
+		// call specific event handler for type
+		var func = tool[ev.type];	
+		if (func) {
+			func(ev);
+		}
+	}
 	// touch event listener
 	function onTouchCanvas(ev) {
 		ev.preventDefault();
@@ -227,8 +228,14 @@ Draw = function() {
 		
 		var touch = ev.touches[0];
 		//$("#log").html("tc : "+ ev.touches.length); //start&move : 1, end:0
-		if(ev.touches.length ==0) touch = _touchEV.touches[0];
+		if(ev.touches.length ==0) {
+			touch = _touchEV.touches[0];
+			//alert("alt");
+		}
 		_touchEV = ev;
+		
+		
+		
 		
 		// call specific event handler for type
 		var func = tool[ev.type];	// ev.type : touchstart touchmove touchend...
@@ -246,35 +253,82 @@ Draw = function() {
 		this.started = false;
 		
 		this.mousedown = function(ev) {	//tool[mousedown]??
+			if(!window.myLampOn) {
+				lampNotOn();
+				return;
+			}
 			listener.started = true;
-			action.onStart(ev._x, ev._y);
+			var xL = (ev._x/window.zoomLev);
+			var yL = (ev._y/window.zoomLev);
+			action.onStart(xL, yL);
 		};
 		this.mousemove = function(ev) {
+			if(!window.myLampOn) {
+				return;
+			}
 			if (listener.started) {
-				action.onMove(ev._x, ev._y);
+				var xL = (ev._x/window.zoomLev);
+				var yL = (ev._y/window.zoomLev);
+				//$("#log").html("x:"+ev._x+" y:"+ev._y+"    xL:"+xL+" yL:"+yL);
+				//$("#log").html(JSON.stringify(ev));
+				action.onMove(xL, yL);
 			}
 		};
 		this.mouseup = function(ev) {
+			if(!window.myLampOn) {
+				return;
+			}
 			if (listener.started) {
-				action.onEnd(ev._x, ev._y);
-				$("#log").html("touchEnd : "+ ev._x + "," + ev._y);				
+				var xL = (ev._x/window.zoomLev);
+				var yL = (ev._y/window.zoomLev);
+				action.onEnd(xL, yL);
+				//$("#log").html("touchEnd : "+ ev._x + "," + ev._y);				
 				listener.started = false;
 			}
 		};
 		this.touchstart = function(ev) {
+			if(!window.myLampOn) {
+				lampNotOn();
+				return;
+			}
 			//$("#log").html("touchStart");
+			
 			listener.started = true;
-			action.onStart(ev.pageX, ev.pageY);
+			
+			var xL = (ev.pageX/window.zoomLev);
+			var yL = ((ev.pageY)/window.zoomLev-140);
+			
+			
+			
+			//alert("x:"+ev.pagex+" y:"+ev.pagey+"    xL:"+xL+" yL:"+yL);
+			action.onStart(xL, yL);
+			//action.onStart(ev.pagex, ev.pagey);
+			$("#log").html(""+ev.pageY);
 		};
 		this.touchmove = function(ev) {
-			//$("#log").html("touchMove");
-			if (listener.started) {
-				action.onMove(ev.pageX, ev.pageY);
+			if(!window.myLampOn) {
+				return;
 			}
+			//$("#log").html("touchMove");
+			var xL = (ev.pageX/window.zoomLev);
+			var yL = ((ev.pageY)/window.zoomLev-140);
+			
+			if (listener.started) {
+				action.onMove(xL, yL);
+				//action.onMove(ev.pagex, ev.pagey);
+			}
+			$("#log").html(""+ev.pageY);
 		};
 		this.touchend = function(ev) {
-			if (listener.started) {				
-				action.onEnd(ev.pageX, ev.pageY);
+			if(!window.myLampOn) {
+
+				return;
+			}
+			if (listener.started) {		
+			var xL = (ev.pageX/window.zoomLev);
+			var yL = ((ev.pageY)/window.zoomLev-140);
+				action.onEnd(xL, yL);
+				//action.onEnd(ev.pagex, ev.pagey);
 				listener.started = false;
 			}
 		};
@@ -359,6 +413,10 @@ Draw = function() {
 				return;
 			}
 			
+			if(window.zoomLev) {
+				zoomLev = window.zoomLev;
+			}
+			
 			context.setLineJoin("round");
 			context.setLineCap("round");
 			
@@ -419,6 +477,60 @@ Draw = function() {
 				if (items[i].undo == false)
 					Draw.draw(items[i]);
 			}
+		},
+		
+		clearAll : function () {
+			if(!window.myLampOn) {
+				lampNotOn();
+				return;
+			}
+			
+			
+			actionData = {
+				id: Client.getMyId(),
+				action: 'clearAll',
+			}
+			
+			Client.send(actionData);
+			actionData = null;
+			
+			context.clearRect(0,0, canvas.width, canvas.height);
+		},
+		
+		drawText : function(str, fs) {
+			context.fillStyle = fs;
+			//context.font
+			//context.textBaseLine
+			context.font = '30px sans-serif';
+			context.fillText(str, 10, ((nInputLine * 40)+50));
+			nInputLine = (nInputLine+1)%12;
+			
+		},
+		
+		sendText : function(str) {
+			if(!window.myLampOn) {
+				lampNotOn();
+				return;
+			}
+			
+			actionData = {
+				id: Client.getMyId(),
+				action: 'drawText',
+				undo: false,
+				lineWidth: lineWidth,
+				color: context.strokeStyle,
+				data: [{msg:str}]
+			}
+			Client.send(actionData);
+			actionData = null;
+			
+			context.fillStyle = context.strokeStyle;
+			//context.font
+			//context.textBaseLine
+			context.font = '30px sans-serif';
+			context.fillText(str, 10, ((nInputLine * 40)+50));
+			nInputLine = (nInputLine+1)%12;
+			
 		}
 	};
 }();

@@ -4,8 +4,10 @@
 <head>
 	<meta charset="UTF-8">
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
 	<script src="lib/plugin/socket.io.js"></script>
    	<link rel="stylesheet" media="screen" type="text/css" href="lib/css/layout.css" />
+		<link rel="stylesheet" media="screen" type="text/css" href="lib/css/scrollbar.css" />
     <script src="lib/js/ui.js"></script>
     <script src="lib/js/client.js"></script>
 	<script src="lib/js/draw.js"></script>
@@ -14,7 +16,22 @@
 	<script src="lib/js/button_event.js"></script>
    
    
-	<title>openDraw</title>
+	<title>GIC openDraw</title>
+<!--
+<style>    
+	// Galaxy Note (800*1280)
+	@media screen and (device-width: 800px) { html { zoom: 100%;-webkit-zoom: 100%; } }
+	// Galaxy S3, Note2, Nexus (720*1280)
+	@media screen and (device-width: 720px) { html { zoom: 90%; -webkit-zoom: 90%; } }
+	// iPhone4 (640*960)
+	@media screen and (device-width: 640px) { html { zoom: 80%;-webkit-zoom: 80%; } }
+	// Galaxy S2 (480*800)
+	@media screen and (device-width: 480px) { html { zoom: 60%; -webkit-zoom: 60%; } }
+	// iPhone3GS (320*480)
+	@media screen and (device-width: 320px) { html { zoom: 40%;-webkit-zoom: 40%; } }
+
+</style>
+-->
 </head>
 
 <body id="body">
@@ -31,17 +48,27 @@
 	</article>
 	-->
 	</div>
-	<!-- <div id="log"></div> -->
+	<!--<div id="log"></div>-->
 	<!-- canvas -->
+	<div id="clear">
+		<img src="./images/clear.png" width="75px" height="75px" />
+	</div>
 	<div id="container" >
     <!--
     	<img id="canvasShadow" src="./images/canvasShadow.png" /> -->
 		<canvas id="drawCanvas" width="800px" height="1120px" ></canvas>
 	</div>
+    
 
+	<div id="notice"><div id="notice-message">this</div></div>
 
-
-	
+	<div id="inputWindow">
+		<form id="inputForm">
+			<input type="text" id="inputText" />
+			<input type="submit" value = "입력" />
+		</form>
+		<img id="enter" src="./images/enter.png" width="60px" height="60px" />
+	</div>
 </div>
 
 </body>

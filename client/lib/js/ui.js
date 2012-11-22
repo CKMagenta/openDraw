@@ -40,7 +40,10 @@ $(document).bind("makeUI", function() {
 	
 	$("ul#entered").append(templete);
 	
-	
+	var deviceWidth = $(window).width();
+	var zoomLev = deviceWidth<800?$(window).width()/800:1;
+	$("html").css("zoom", zoomLev);
+	window.zoomLev = zoomLev;
 	/*
 	var minW = $(document).width();
 	
@@ -50,10 +53,45 @@ $(document).bind("makeUI", function() {
 	});
 	*/
 	//$(window).resize(CheckSizeZoom);
+	
+	
+	$(window).resize(function(e) {
+		
+		if( $(window).width() < 800 ) {
+			$("#inputWindow").css("display","none");	
+		} else {
+		var marginWidth = $(window).width() - 822;
+		var buttonWidth = 0;//50;
+		var inputWidth = marginWidth - buttonWidth;
+			$("#inputWindow").css({width:marginWidth});
+			$("#inputWindow  #inputText").css({width:inputWidth});
+			//$("#inputWindow  input:submit").css({width:buttonwidth});
+		
+		}	
+	});
+	
+	$(window).resize();
+	
+	
+	$("#inputForm").submit(function(e) {
+		
+		Draw.sendText($(this).find("input:text").val());
+		$(this).find("input:text").val("");
+		
+		
+		
+		
+		return false;
+	});
+	
+	$("#clear").click(function(e) {
+		Draw.clearAll();
+	});
+	
 });
 
 function CheckSizeZoom() {
-	if (1) { //$(window).width() < minW
+	if ($(window).width()<800) { //$(window).width() < minW
 		var zoomLev = $(window).width() / minW;
 		if (typeof (document.body.style.zoom) != "undefined") {
 			$(document.body).css('zoom', zoomLev);
@@ -83,3 +121,9 @@ $(document).ready(function() {
 	Draw.initialize();
 	Client.initialize();
 });
+
+function lampNotOn() {
+	$("#notice-message").text("자신의 위치를 표시해 주세요");
+	$("#notice").fadeIn(400).delay(2000).fadeOut(400);
+	//$("#notice-message").text("");	
+};

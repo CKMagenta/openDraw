@@ -107,6 +107,22 @@ Client = function() {
 			});
 
 
+			conn.on('clearAll', function(message) {
+				if(message != undefined) {
+					Draw.clearAll();
+				}
+			});
+
+			conn.on('drawText', function(message) {
+				if(message != undefined) {
+					var d = message.data;
+					var msg = d[0].msg;
+					Draw.drawText(msg, message.color);
+				}
+			});
+
+
+
 			conn.onopen = function () {
 				var state = $('#status');
 				state.html('Socket open');

@@ -2,12 +2,60 @@
 body {
 	font-family:Tahoma;
 	font-size:20px;
+	background-image:url(../../images/background.jpg);
+	background-repeat:no-repeat;
+	
+	background-size : 677px 1260px;
+	background-position:820px 300px;
 }
-/*
+
 #log {
 	z-index:999;
-}*/
+	position:absolute;
+	top:160px;
+	left:10px;
+}
 
+#clear {
+	width : 75px;
+	height : 75px;
+	position : absolute;
+	top : 170px;
+	left : 715px;
+	z-index : 10000;
+}
+
+#enter {
+	position : absolute;
+	top : 50px;
+	right : 10px;
+	zindex : 5000;
+}
+
+#notice {
+	display:none;
+	position:absolute;
+	top:300px;
+	width:800px;
+	text-align:center;
+	
+	z-index : 1000;
+}
+#notice #notice-message{
+	display:inline;
+	width : 300px;	
+	background-color:rgba(255,102,102,0.3);
+	padding : 20px 40px;
+	
+	border-radius: 10px;
+	-moz-border-radius: 10px;
+	-webkit-background-clip: padding-box; 
+	-moz-background-clip:    padding; 
+	background-clip:         padding-box;
+	
+	font-size : 14px ;
+	font-family:"Dotum", san-serif;
+}
 #window {
 	background-color:threedface;
 	
@@ -26,8 +74,7 @@ body {
 	box-shadow: 0 0 20px #888;
 	
 	//position:absolute; //left:0px; top:0px;
-	margin-left : auto;
-	margin-right : auto;
+
 }
 
 #canvasShadow {
@@ -184,7 +231,28 @@ visibility: hidden;
 }
 
 
+div#inputWindow form#inputForm input[type="submit"]{
+	display:none;
+}
+
+#inputWindow #inputForm input:text {
+	display:inline;
+}
+#inputWindow #inputForm {
+	
+}
 
 
+#inputWindow {
+	height : 100%;
+	margin : 10px;
+	position:absolute;
+	top : 0px;
+	left : 800px;
+}
 
 
+#inputText {
+	border : 0px black solid;
+	box-shadow: 0 3px 10px -2px;;
+}
