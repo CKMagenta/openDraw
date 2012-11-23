@@ -115,9 +115,7 @@ Client = function() {
 
 			conn.on('drawText', function(message) {
 				if(message != undefined) {
-					var d = message.data;
-					var msg = d[0].msg;
-					Draw.drawText(msg, message.color);
+					Draw.drawText(message);
 				}
 			});
 

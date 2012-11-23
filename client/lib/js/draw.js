@@ -497,12 +497,31 @@ Draw = function() {
 			context.clearRect(0,0, canvas.width, canvas.height);
 		},
 		
-		drawText : function(str, fs) {
-			context.fillStyle = fs;
+		drawText : function(message) {
+			var data = message.data;
+			//var msg = data[0].msg;
+			
+			var il = data[0].nInputLine;
+			var fs = message.color;
+			var str = data[0].msg;
+			
+			
+			
 			//context.font
 			//context.textBaseLine
 			context.font = '30px sans-serif';
-			context.fillText(str, 10, ((nInputLine * 40)+50));
+			var textWidth = context.measureText(str).width;
+			var x= 10;
+			var y=((nInputLine * 40)+50);
+			
+			// drawing rect (x,y) ~ (x+textWidth, y+30);
+			//context.
+			context.fillStyle = "rgb(255,255,255)";
+			context.fillRect(x, y, textWidth, -25);
+			context.moveTo(x,y);
+			nInputLine = il; // inputLine sync
+			context.fillStyle = fs;
+			context.fillText(str, x, y);
 			nInputLine = (nInputLine+1)%12;
 			
 		},
@@ -518,17 +537,41 @@ Draw = function() {
 				action: 'drawText',
 				undo: false,
 				lineWidth: lineWidth,
-				color: context.strokeStyle,
-				data: [{msg:str}]
+				color: color,
+				data: [{msg:str, nInputLine:nInputLine}]
 			}
 			Client.send(actionData);
 			actionData = null;
 			
-			context.fillStyle = context.strokeStyle;
+			
+			/*
+			context.fillStyle = color;
 			//context.font
 			//context.textBaseLine
 			context.font = '30px sans-serif';
-			context.fillText(str, 10, ((nInputLine * 40)+50));
+			var textWidth = ctx.measureText (str);
+			var x= 10;
+			var y=((nInputLine * 40)+50);
+			// drawing rect (x,y) ~ (x+textWidth, y+30);
+			context.fillText(str, x, y);
+			nInputLine = (nInputLine+1)%12;
+			*/
+			
+			//context.font
+			//context.textBaseLine
+			context.font = '30px sans-serif';
+			var textWidth = context.measureText(str).width;
+			var x= 10;
+			var y=((nInputLine * 40)+50);
+			
+			// drawing rect (x,y) ~ (x+textWidth, y+30);
+			//context.
+			context.fillStyle = "rgb(255,255,255)";
+			context.fillRect(x, y, textWidth, -25);
+			context.moveTo(x,y);
+			nInputLine = nInputLine; // inputLine sync
+			context.fillStyle = color;
+			context.fillText(str, x, y);
 			nInputLine = (nInputLine+1)%12;
 			
 		}
